@@ -4,3 +4,9 @@ LiveKit endpoint:
 Required node firewall ports:
   {{ .Values.livekit.rtc.tcpPort }}/TCP
   {{ .Values.livekit.rtc.udpPort }}/UDP
+
+Service:
+  {{ .Values.service.name | default (include "livekit.fullname" .) }}
+
+Kubernetes Service Links:
+  {{ .Values.enableServiceLinks }}

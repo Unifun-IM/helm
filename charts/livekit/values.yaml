@@ -13,6 +13,12 @@ fullnameOverride: "livekit"
 hostNetwork: true
 dnsPolicy: ClusterFirstWithHostNet
 
+# 禁止 Kubernetes 将 Service 信息注入为环境变量。
+# 否则名为 livekit 的 Service 会生成：
+# LIVEKIT_PORT=tcp://<cluster-ip>:7880
+# 并与 LiveKit Server 的 LIVEKIT_PORT 数字参数冲突。
+enableServiceLinks: false
+
 # 单节点只能运行一个 LiveKit Pod，避免滚动更新时争抢媒体端口。
 strategy:
   type: Recreate
@@ -60,6 +66,8 @@ apiKeys:
   mountPath: /etc/livekit/keys.yaml
 
 service:
+  # 避免生成 LIVEKIT_PORT、LIVEKIT_SERVICE_HOST 等同名前缀变量。
+  name: livekit-http
   type: ClusterIP
   port: 7880
 
