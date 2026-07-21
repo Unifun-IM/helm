@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "livekit.fullname" . }}
+  labels:
+    {{- include "livekit.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    port: {{ .Values.livekit.port }}
+    log_level: {{ .Values.livekit.logLevel }}
+    key_file: {{ .Values.apiKeys.mountPath }}
+
+    rtc:
+      tcp_port: {{ .Values.livekit.rtc.tcpPort }}
+      udp_port: {{ .Values.livekit.rtc.udpPort }}
+      use_external_ip: {{ .Values.livekit.rtc.useExternalIP }}
+{{ if .Values.livekit.rtc.nodeIP }}
+      node_ip: {{ .Values.livekit.rtc.nodeIP | quote }}
+{{ end }}
+{{ if .Values.livekit.prometheus.enabled }}
+    prometheus_port: {{ .Values.livekit.prometheus.port }}
+{{ end }}
+{{ if .Values.livekit.redis.enabled }}
+    redis:
+      address: {{ required "livekit.redis.address is required when Redis is enabled" .Values.livekit.redis.address | quote }}
+      db: {{ .Values.livekit.redis.db }}
+{{ if .Values.livekit.redis.username }}
+      username: {{ .Values.livekit.redis.username | quote }}
+{{ end }}
+{{ if .Values.livekit.redis.password }}
+      password: {{ .Values.livekit.redis.password | quote }}
+{{ end }}
+{{ if .Values.livekit.redis.tls.enabled }}
+      tls:
+        enabled: true
+        insecure: {{ .Values.livekit.redis.tls.insecure }}
+{{ end }}
+{{ end }}
+    turn:
+      enabled: {{ .Values.livekit.turn.enabled }}
+{{ if .Values.livekit.turn.enabled }}
+      domain: {{ required "livekit.turn.domain is required when TURN is enabled" .Values.livekit.turn.domain | quote }}
+      tls_port: {{ .Values.livekit.turn.tlsPort }}
+      udp_port: {{ .Values.livekit.turn.udpPort }}
+{{ end }}

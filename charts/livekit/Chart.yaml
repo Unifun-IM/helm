@@ -1,0 +1,6 @@
+apiVersion: v2
+name: livekit
+description: Self-maintained LiveKit Server Helm chart for ArgoCD
+type: application
+version: 0.1.0
+appVersion: "1.13.4"

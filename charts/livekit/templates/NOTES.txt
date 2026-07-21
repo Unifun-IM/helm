@@ -1,0 +1,6 @@
+LiveKit endpoint:
+  wss://{{ .Values.ingress.host }}
+
+Required node firewall ports:
+  {{ .Values.livekit.rtc.tcpPort }}/TCP
+  {{ .Values.livekit.rtc.udpPort }}/UDP

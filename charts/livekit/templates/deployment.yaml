@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "livekit.fullname" . }}
+  labels:
+    {{- include "livekit.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "livekit.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "livekit.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: livekit
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --disable-strict-config
+          env:
+            - name: LIVEKIT_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "livekit.fullname" . }}
+                  key: config.yaml
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.livekit.port }}
+              protocol: TCP
+            - name: rtc-tcp
+              containerPort: {{ .Values.livekit.rtc.tcpPort }}
+              hostPort: {{ .Values.livekit.rtc.tcpPort }}
+              protocol: TCP
+            - name: rtc-udp
+              containerPort: {{ .Values.livekit.rtc.udpPort }}
+              hostPort: {{ .Values.livekit.rtc.udpPort }}
+              protocol: UDP
+            {{- if .Values.livekit.prometheus.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.livekit.prometheus.port }}
+              hostPort: {{ .Values.livekit.prometheus.port }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.livekit.turn.enabled }}
+            - name: turn-tls
+              containerPort: {{ .Values.livekit.turn.tlsPort }}
+              hostPort: {{ .Values.livekit.turn.tlsPort }}
+              protocol: TCP
+            - name: turn-udp
+              containerPort: {{ .Values.livekit.turn.udpPort }}
+              hostPort: {{ .Values.livekit.turn.udpPort }}
+              protocol: UDP
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: api-keys
+              mountPath: {{ .Values.apiKeys.mountPath }}
+              subPath: {{ .Values.apiKeys.secretKey }}
+              readOnly: true
+      volumes:
+        - name: api-keys
+          secret:
+            secretName: {{ .Values.apiKeys.existingSecret }}
+            defaultMode: 0600
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

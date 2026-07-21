@@ -1,0 +1,98 @@
+replicaCount: 1
+
+image:
+  repository: livekit/livekit-server
+  tag: v1.13.4
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "livekit"
+
+# LiveKit 在 Kubernetes 中需要直接访问节点网络。
+hostNetwork: true
+dnsPolicy: ClusterFirstWithHostNet
+
+# 单节点只能运行一个 LiveKit Pod，避免滚动更新时争抢媒体端口。
+strategy:
+  type: Recreate
+
+# 官方建议为长连接预留较长的优雅退出时间。
+terminationGracePeriodSeconds: 18000
+
+livekit:
+  port: 7880
+  logLevel: info
+
+  rtc:
+    useExternalIP: true
+    tcpPort: 7881
+    # 使用 UDP mux 单端口，避免开放 50000-60000/UDP。
+    udpPort: 7882
+
+    # 当 STUN 无法识别正确公网 IP 时填写节点公网 IP，
+    # 并把 useExternalIP 改为 false。
+    nodeIP: ""
+
+  prometheus:
+    enabled: false
+    port: 6789
+
+  redis:
+    enabled: false
+    address: ""
+    username: ""
+    password: ""
+    db: 0
+    tls:
+      enabled: false
+      insecure: false
+
+  turn:
+    enabled: false
+    domain: ""
+    tlsPort: 5349
+    udpPort: 3478
+
+apiKeys:
+  existingSecret: livekit-api-keys
+  secretKey: keys.yaml
+  mountPath: /etc/livekit/keys.yaml
+
+service:
+  type: ClusterIP
+  port: 7880
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-http01
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+  host: im-live.djftech.app
+  tls:
+    enabled: true
+    secretName: im-live-djftech-app-tls
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "4"
+    memory: 4Gi
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

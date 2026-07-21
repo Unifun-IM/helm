@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: livekit
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    # 修改为存放本目录的 Git 仓库地址。
+    repoURL: https://github.com/Unifun-IM/helm.git
+    targetRevision: main
+    path: charts/livekit
+    helm:
+      releaseName: livekit
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: livekit
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
