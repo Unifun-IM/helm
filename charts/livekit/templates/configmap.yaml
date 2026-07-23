@@ -43,3 +43,12 @@ data:
       tls_port: {{ .Values.livekit.turn.tlsPort }}
       udp_port: {{ .Values.livekit.turn.udpPort }}
 {{ end }}
+{{ if .Values.webhook.enabled }}
+    webhook:
+      # 真实值由 LIVEKIT_WEBHOOK_API_KEY 环境变量覆盖。
+      api_key: ""
+      urls:
+{{ range required "webhook.urls must contain at least one URL when webhook is enabled" .Values.webhook.urls }}
+        - {{ . | quote }}
+{{ end }}
+{{ end }}

@@ -46,6 +46,13 @@ spec:
                 configMapKeyRef:
                   name: {{ include "livekit.fullname" . }}
                   key: config.yaml
+            {{- if .Values.webhook.enabled }}
+            - name: LIVEKIT_WEBHOOK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.apiKeys.existingSecret }}
+                  key: {{ .Values.webhook.apiKeySecretKey }}
+            {{- end }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           ports:

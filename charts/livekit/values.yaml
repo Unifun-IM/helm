@@ -65,6 +65,15 @@ apiKeys:
   secretKey: keys.yaml
   mountPath: /etc/livekit/keys.yaml
 
+# LiveKit Webhook。签名 API Key 从 apiKeys.existingSecret 读取。
+webhook:
+  enabled: false
+  apiKeySecretKey: webhook-api-key
+  urls: []
+  # 启用示例：
+  # urls:
+  #   - https://api.example.com/webhooks/livekit
+
 service:
   # 避免生成 LIVEKIT_PORT、LIVEKIT_SERVICE_HOST 等同名前缀变量。
   name: livekit-http

@@ -10,3 +10,12 @@ Service:
 
 Kubernetes Service Links:
   {{ .Values.enableServiceLinks }}
+
+Webhook:
+  enabled: {{ .Values.webhook.enabled }}
+{{- if .Values.webhook.enabled }}
+  urls:
+{{- range .Values.webhook.urls }}
+    - {{ . }}
+{{- end }}
+{{- end }}
