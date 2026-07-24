@@ -69,8 +69,8 @@ apiKeys:
 webhook:
   enabled: true
   apiKeySecretKey: webhook-api-key
-  urls: 
-    - https://im28-api-gateway.im28.svc.cluster.local:8080/v1/livekit/webhook
+  urls:
+    - http://im28-api-gateway.im28.svc.cluster.local:8080/v1/livekit/webhook
   # 启用示例：
   # urls:
   #   - https://api.example.com/webhooks/livekit
