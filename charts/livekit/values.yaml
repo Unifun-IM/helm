@@ -68,7 +68,7 @@ apiKeys:
 # LiveKit Webhook。签名 API Key 从 apiKeys.existingSecret 读取。
 webhook:
   enabled: true
-  e0660049eee3c5a1dec4d2120091df43: f53fc7988c81533973b2e2961e6217cb6d782b820dd0235f90cc8cca12aa3715
+  apiKeySecretKey: webhook-api-key
   urls: 
     - https://im28-chat.im28.svc.cluster.local:8080/v1/livekit/webhook
   # 启用示例：
