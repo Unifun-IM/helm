@@ -30,6 +30,12 @@ livekit:
   port: 7880
   logLevel: info
 
+  room:
+    # 房间创建后无人加入时的保留时间，单位：秒。
+    emptyTimeout: 300
+    # 最后一位参与者离开后的房间保留时间，单位：秒。
+    departureTimeout: 20
+
   rtc:
     useExternalIP: true
     tcpPort: 7881

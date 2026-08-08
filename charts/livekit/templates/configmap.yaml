@@ -10,6 +10,10 @@ data:
     log_level: {{ .Values.livekit.logLevel }}
     key_file: {{ .Values.apiKeys.mountPath }}
 
+    room:
+      empty_timeout: {{ .Values.livekit.room.emptyTimeout }}
+      departure_timeout: {{ .Values.livekit.room.departureTimeout }}
+
     rtc:
       tcp_port: {{ .Values.livekit.rtc.tcpPort }}
       udp_port: {{ .Values.livekit.rtc.udpPort }}
