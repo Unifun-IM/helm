@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: livekit-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Unifun-IM/helm.git
+    targetRevision: main
+    path: charts/livekit
+    helm:
+      releaseName: livekit-dev
+      values: |
+        webhook:
+          urls:
+            - http://im28-api-gateway.im28-dev.svc.cluster.local:8080/v1/livekit/webhook
+        ingress:
+          host: im-dev-live.djftech.app
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: livekit-dev
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
