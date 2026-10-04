@@ -15,6 +15,14 @@ spec:
     path: charts/livekit
     helm:
       releaseName: livekit
+      values: |
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "512Mi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
 
   destination:
     server: https://kubernetes.default.svc

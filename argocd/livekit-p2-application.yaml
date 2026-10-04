@@ -20,6 +20,14 @@ spec:
             - http://im28-api-gateway.im28-p2.svc.cluster.local:8080/v1/livekit/webhook
         ingress:
           host: im-p2-live.djftech.app
+        
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "512Mi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
 
   destination:
     server: https://kubernetes.default.svc
