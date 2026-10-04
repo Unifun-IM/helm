@@ -23,7 +23,7 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: livekit-dev
+    namespace: livekit-p2
 
   syncPolicy:
     automated:
