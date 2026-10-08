@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: livekit-im99
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Unifun-IM/helm.git
+    targetRevision: main
+    path: charts/livekit
+    helm:
+      releaseName: livekit-im99
+      values: |
+        webhook:
+          urls:
+            - http://im-api-gateway.im99.svc.cluster.local:8080/v1/livekit/webhook
+        ingress:
+          host: im99-live.djftech.app
+        
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "128Mi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: im99
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
