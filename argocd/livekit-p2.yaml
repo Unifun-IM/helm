@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: livekit-p2
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Unifun-IM/helm.git
+    targetRevision: main
+    path: charts/livekit
+    helm:
+      releaseName: livekit-p2
+      values: |
+        livekit:
+          portOffset: 20
+        webhook:
+          urls:
+            - http://im28-api-gateway.im28-p2.svc.cluster.local:8080/v1/livekit/webhook
+        ingress:
+          host: im-p2-live.djftech.app
+        
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "512Mi"
+          limits:
+            cpu: "4"
+            memory: "4Gi"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: imp2
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
