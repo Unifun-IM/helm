@@ -6,7 +6,7 @@ metadata:
     {{- include "livekit.labels" . | nindent 4 }}
 data:
   config.yaml: |
-    port: {{ .Values.livekit.port }}
+    port: {{ include "livekit.httpPort" . }}
     log_level: {{ .Values.livekit.logLevel }}
     key_file: {{ .Values.apiKeys.mountPath }}
 
@@ -15,14 +15,14 @@ data:
       departure_timeout: {{ .Values.livekit.room.departureTimeout }}
 
     rtc:
-      tcp_port: {{ .Values.livekit.rtc.tcpPort }}
-      udp_port: {{ .Values.livekit.rtc.udpPort }}
+      tcp_port: {{ include "livekit.rtcTcpPort" . }}
+      udp_port: {{ include "livekit.rtcUdpPort" . }}
       use_external_ip: {{ .Values.livekit.rtc.useExternalIP }}
 {{ if .Values.livekit.rtc.nodeIP }}
       node_ip: {{ .Values.livekit.rtc.nodeIP | quote }}
 {{ end }}
 {{ if .Values.livekit.prometheus.enabled }}
-    prometheus_port: {{ .Values.livekit.prometheus.port }}
+    prometheus_port: {{ include "livekit.prometheusPort" . }}
 {{ end }}
 {{ if .Values.livekit.redis.enabled }}
     redis:
@@ -44,8 +44,8 @@ data:
       enabled: {{ .Values.livekit.turn.enabled }}
 {{ if .Values.livekit.turn.enabled }}
       domain: {{ required "livekit.turn.domain is required when TURN is enabled" .Values.livekit.turn.domain | quote }}
-      tls_port: {{ .Values.livekit.turn.tlsPort }}
-      udp_port: {{ .Values.livekit.turn.udpPort }}
+      tls_port: {{ include "livekit.turnTlsPort" . }}
+      udp_port: {{ include "livekit.turnUdpPort" . }}
 {{ end }}
 {{ if .Values.webhook.enabled }}
     webhook:

@@ -2,8 +2,13 @@ LiveKit endpoint:
   wss://{{ .Values.ingress.host }}
 
 Required node firewall ports:
-  {{ .Values.livekit.rtc.tcpPort }}/TCP
-  {{ .Values.livekit.rtc.udpPort }}/UDP
+  {{ include "livekit.httpPort" . }}/TCP
+  {{ include "livekit.rtcTcpPort" . }}/TCP
+  {{ include "livekit.rtcUdpPort" . }}/UDP
+
+Scheduling:
+  同一 Release 每个节点只能运行 1 个 Pod。副本数不能超过可调度节点数。
+  多个环境共集群时，为每个 Release 设置不同的 livekit.portOffset。
 
 Service:
   {{ .Values.service.name | default (include "livekit.fullname" .) }}

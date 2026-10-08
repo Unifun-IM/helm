@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: livekit/livekit-server
-  tag: v1.13.4
+  tag: v1.13.9
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -19,15 +19,27 @@ dnsPolicy: ClusterFirstWithHostNet
 # 并与 LiveKit Server 的 LIVEKIT_PORT 数字参数冲突。
 enableServiceLinks: false
 
-# 单节点只能运行一个 LiveKit Pod，避免滚动更新时争抢媒体端口。
+# 同一套 hostPort 在每个节点只能被一个 Pod 占用。
+# maxSurge 必须为 0：滚动更新时新 Pod 不能在旧 Pod 释放端口之前创建。
 strategy:
-  type: Recreate
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 0
+    maxUnavailable: 1
+
+# 同一 Release 的 Pod 分散到不同节点。不同 Release 用 portOffset 错开端口后可以共节点。
+podAntiAffinity:
+  enabled: true
+  topologyKey: kubernetes.io/hostname
 
 # 官方建议为长连接预留较长的优雅退出时间。
 terminationGracePeriodSeconds: 18000
 
 livekit:
   port: 7880
+  # 多环境部署在同一集群时，每个 Release 设置不同偏移，避免抢占节点上的 7880/7881/7882。
+  # 实际端口 = 基准端口 + portOffset。节点防火墙需要放行偏移后的 TCP/UDP 端口。
+  portOffset: 0
   logLevel: info
 
   room:

@@ -15,6 +15,8 @@ spec:
     helm:
       releaseName: livekit-dev
       values: |
+        livekit:
+          portOffset: 10
         webhook:
           urls:
             - http://im28-api-gateway.im28-dev.svc.cluster.local:8080/v1/livekit/webhook

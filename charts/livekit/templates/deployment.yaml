@@ -1,3 +1,9 @@
+{{- if and (gt (.Values.replicaCount | int) 1) (not .Values.livekit.redis.enabled) }}
+{{- fail "replicaCount 大于 1 时必须启用 livekit.redis，否则各节点房间状态不互通" }}
+{{- end }}
+{{- if or (gt (include "livekit.httpPort" . | int) 65535) (gt (include "livekit.rtcTcpPort" . | int) 65535) (gt (include "livekit.rtcUdpPort" . | int) 65535) }}
+{{- fail "livekit.portOffset 过大，HTTP/TCP/UDP 端口超过 65535" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -57,30 +63,31 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           ports:
             - name: http
-              containerPort: {{ .Values.livekit.port }}
+              containerPort: {{ include "livekit.httpPort" . }}
+              hostPort: {{ include "livekit.httpPort" . }}
               protocol: TCP
             - name: rtc-tcp
-              containerPort: {{ .Values.livekit.rtc.tcpPort }}
-              hostPort: {{ .Values.livekit.rtc.tcpPort }}
+              containerPort: {{ include "livekit.rtcTcpPort" . }}
+              hostPort: {{ include "livekit.rtcTcpPort" . }}
               protocol: TCP
             - name: rtc-udp
-              containerPort: {{ .Values.livekit.rtc.udpPort }}
-              hostPort: {{ .Values.livekit.rtc.udpPort }}
+              containerPort: {{ include "livekit.rtcUdpPort" . }}
+              hostPort: {{ include "livekit.rtcUdpPort" . }}
               protocol: UDP
             {{- if .Values.livekit.prometheus.enabled }}
             - name: metrics
-              containerPort: {{ .Values.livekit.prometheus.port }}
-              hostPort: {{ .Values.livekit.prometheus.port }}
+              containerPort: {{ include "livekit.prometheusPort" . }}
+              hostPort: {{ include "livekit.prometheusPort" . }}
               protocol: TCP
             {{- end }}
             {{- if .Values.livekit.turn.enabled }}
             - name: turn-tls
-              containerPort: {{ .Values.livekit.turn.tlsPort }}
-              hostPort: {{ .Values.livekit.turn.tlsPort }}
+              containerPort: {{ include "livekit.turnTlsPort" . }}
+              hostPort: {{ include "livekit.turnTlsPort" . }}
               protocol: TCP
             - name: turn-udp
-              containerPort: {{ .Values.livekit.turn.udpPort }}
-              hostPort: {{ .Values.livekit.turn.udpPort }}
+              containerPort: {{ include "livekit.turnUdpPort" . }}
+              hostPort: {{ include "livekit.turnUdpPort" . }}
               protocol: UDP
             {{- end }}
           livenessProbe:
@@ -115,9 +122,19 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- if or .Values.podAntiAffinity.enabled .Values.affinity }}
       affinity:
+        {{- if .Values.podAntiAffinity.enabled }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "livekit.selectorLabels" . | nindent 18 }}
+              topologyKey: {{ .Values.podAntiAffinity.topologyKey }}
+        {{- end }}
+        {{- with .Values.affinity }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
